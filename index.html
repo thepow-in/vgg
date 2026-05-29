@@ -292,21 +292,47 @@
     100% { background-position: 180px 180px; }
   }
 
+  /* Full-screen photo behind everything */
+  #end-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    z-index: 1;
+    animation: photo-zoom 12s ease-out forwards;
+  }
+  @keyframes photo-zoom {
+    0%   { transform: scale(1.0); }
+    100% { transform: scale(1.35); }
+  }
+
+  /* Translucent pride-coloured vignette over the photo so text is readable */
+  #end-photo-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: radial-gradient(ellipse at center,
+      rgba(0,0,0,0.0) 30%,
+      rgba(80,0,120,0.55) 100%);
+    pointer-events: none;
+  }
+
+  /* Card is now a transparent floating panel centred on screen */
   #end-card {
     position: relative;
-    background: rgba(255,255,255,0.97);
+    background: transparent;
     border-radius: 28px;
     padding: 28px 32px 24px;
     text-align: center;
-    box-shadow: 0 12px 60px rgba(100,0,200,0.5);
     max-width: 520px;
     width: 94%;
-    border: 3px solid rgba(200,100,255,0.5);
     z-index: 5;
   }
   #end-title {
     font-family: 'Fredoka One', cursive;
-    font-size: 2.2rem;
+    font-size: 2.6rem;
     background: linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00cc00,#0066ff,#8800ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -314,38 +340,25 @@
     margin-bottom: 10px;
     animation: rainbow-text 3s linear infinite;
     background-size: 200%;
+    filter: drop-shadow(0 3px 8px rgba(0,0,0,0.8));
   }
   @keyframes rainbow-text {
     0%   { background-position: 0%; }
     100% { background-position: 200%; }
   }
-  #end-photo {
-    width: 200px;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 5px solid transparent;
-    background: linear-gradient(white,white) padding-box,
-                linear-gradient(135deg,#ff0,#f0f,#0ff,#0f0,#ff0) border-box;
-    margin: 10px auto;
-    display: block;
-    box-shadow: 0 0 30px rgba(200,100,255,0.6);
-    animation: spin-border 4s linear infinite;
-  }
-  @keyframes spin-border {
-    0%   { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
-  }
   #end-score {
     font-family: 'Fredoka One', cursive;
-    font-size: 3rem;
-    color: #e85a2a;
+    font-size: 3.5rem;
+    color: #fff;
+    text-shadow: 0 0 20px #ff44ff, 0 3px 10px rgba(0,0,0,0.9);
     margin: 6px 0;
   }
   #end-msg {
-    color: #666;
-    font-size: 0.95rem;
-    margin-bottom: 12px;
+    color: #ffe8ff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    margin-bottom: 14px;
   }
   #end-play-again {
     background: linear-gradient(135deg, #e040fb, #7c4dff);
@@ -356,8 +369,9 @@
     font-family: 'Fredoka One', cursive;
     font-size: 1.2rem;
     cursor: pointer;
-    box-shadow: 0 6px 20px rgba(200,0,255,0.4);
+    box-shadow: 0 6px 30px rgba(200,0,255,0.7), 0 0 0 3px rgba(255,255,255,0.3);
     transition: transform 0.15s;
+    backdrop-filter: blur(4px);
     margin-top: 6px;
   }
   #end-play-again:hover { transform: scale(1.06); }
@@ -564,11 +578,16 @@
 
   <!-- END SCREEN -->
   <div id="end-screen">
+    <!-- Full-screen photo — sits below everything else -->
+    <img id="end-photo" src="" alt="The crew!" />
+    <!-- Dark vignette overlay so text pops -->
+    <div id="end-photo-vignette"></div>
+    <!-- Rainbow stripe overlay -->
     <div id="end-rainbow-bg"></div>
     <!-- rainbow arcs will be injected by JS -->
+    <!-- UI on top of the photo -->
     <div id="end-card">
       <div id="end-title">🌈 YASSS QUEEN! 🌈</div>
-      <img id="end-photo" src="" alt="The crew!" />
       <div id="end-score">0 pts</div>
       <div id="end-msg"></div>
       <button id="end-play-again">Play Again 🐐✨</button>
@@ -1022,7 +1041,7 @@ function launchFirework() {
 function scheduleBanana() {
   if (!endScreen.classList.contains('active')) return;
   spawnBanana();
-  const delay = 200 + Math.random() * 400;
+  const delay = 600 + Math.random() * 800;
   state.bananaHandle = setTimeout(scheduleBanana, delay);
 }
 
@@ -1031,7 +1050,7 @@ function spawnBanana() {
   const banana = document.createElement('div');
   banana.className = 'banana';
   const startX  = 5 + Math.random() * 85; // vw
-  const dur     = 3 + Math.random() * 2;
+  const dur     = 3 + Math.random() * 3;
   const rot0    = -30 + Math.random() * 60;
   const rot1    = rot0 + (Math.random() - 0.5) * 180;
   banana.style.cssText = `
@@ -1076,11 +1095,11 @@ function spawnBanana() {
     // "WHY ARE YOU JAY VAL?" text
     const txt = document.createElement('div');
     txt.className = 'banana-pop';
-    txt.innerHTML = '<strong>WHY ARE YOU GAY VAL? 🍌</strong>';
+    txt.innerHTML = '<strong>WHY ARE YOU JAY VAL? 🍌</strong>';
     txt.style.left = Math.max(5, e.clientX - 130) + 'px';
     txt.style.top  = (e.clientY - 50) + 'px';
     document.body.appendChild(txt);
-    setTimeout(() => txt.remove(), 4500);
+    setTimeout(() => txt.remove(), 1500);
 
     setTimeout(() => banana.remove(), 200);
   });
